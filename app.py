@@ -9,8 +9,8 @@ from sqlalchemy import create_engine
 from sqlalchemy import or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from flask_httpauth import HTTPBasicAuth
-from flask_login import LoginManager, logout_user
+# from flask_httpauth import HTTPBasicAuth
+# from flask_login import LoginManager, logout_user
 from werkzeug.security import *
 import numpy as np
 from datetime import *
@@ -22,6 +22,7 @@ from google_calendar import holiday
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+app.config['JSON_AS_ASCII'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL') or 'sqlite:///k-on.db'  # or "postgresql://localhost/k-on"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
