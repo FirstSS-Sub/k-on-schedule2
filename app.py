@@ -130,8 +130,8 @@ def create_user():
     """
     if request.method == 'GET':
         # グループ登録画面に遷移
-        return render_template('create_user.html',
-                               title='ユーザーの追加')
+        return jsonify({"土井": "康平"}), 200  # OK
+        # return render_template('create_user.html', title='ユーザーの追加')
 
     # 登録フォームから送られてきた値を取得
     user_name = request.json['user_name']
@@ -174,7 +174,7 @@ def create_user():
     expires = int(datetime.now().timestamp()) + max_age
     response.set_cookie('user_name', value=user.user_name, max_age=max_age)
     #                   ,expires=expires, path='/', domain=domain, secure=None, httponly=False)
-    return response
+    # return response
 
 
 @app.route('/create_group', methods=['GET', 'POST'])
@@ -269,7 +269,8 @@ def login():
     if error_message is not None:
         # エラーがあればそれを表示したうえでログイン画面に遷移
         flash(error_message, category='alert alert-danger')
-        return redirect(url_for('login'))
+        return None, 400
+        # return redirect(url_for('login'))
 
     ### エラーがなければクッキーに情報を保存してhomeへ ###
     groups = db.session.query(GroupList).filter(or_(GroupList.member1 == user_name,
@@ -400,9 +401,9 @@ def schedule():
     return redirect(url_for('login'))
 
 
-@app.route('/group/<string:group_name>', methods=['GET', 'POST'])
+@app.route('/group/<int:group_name>', methods=['GET', 'POST'])
 def group(group_name):
-    user_name = request.cookies.get('user_name', None)
+    user_name = request.json["user_name"]
     members = db.session.query(GroupList).filter_by(
         group_name=group_name).first()
 
@@ -734,7 +735,7 @@ def group(group_name):
             all_members_data.append(member_data)
 
         # コマ時間のデータが行、メンバーごとのデータが列になるように、転置行列にする
-        all_week_data = np.array(all_members_data).T
+        all_week_data = np.array(all_members_data).T.tolist()
         # app.logger.info(all_week_data)
 
         scheduled_time = []
@@ -916,12 +917,21 @@ def group(group_name):
             if user.comment != "":
                 comment_list.append("{}: {}".format(member, user.comment))
 
+        return jsonify({
+            "group_name": group_name,
+            "group_members": group_members,
+            "scheduled_time": scheduled_time,
+            "update_flags": update_flags,
+            "comment_list": comment_list
+        })
+        """
         return render_template("group.html", group_name=group_name,
                                members=group_members,
                                scheduled_time=scheduled_time,
                                all_week_data=all_week_data,
                                update=update_flags,
                                comment_list=comment_list)
+        """
 
         ##############################################
         """
@@ -968,13 +978,13 @@ def group(group_name):
         ##############################################
 
 
-@app.route('/add_to_group/<string:group_name>', methods=['GET', 'POST'])
+@app.route('/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
 def add_to_group(group_name):
     if request.method == 'GET':
         return render_template("add_to_group.html")
 
     # POSTなら
-    add_user = request.json['add_user']
+    add_user = request.json["add_user"]
 
     if db.session.query(UserList).filter_by(user_name=add_user).first() is None:
         flash('ユーザーが存在しません', category='alert alert-danger')
@@ -1004,7 +1014,8 @@ def add_to_group(group_name):
     db.session.commit()
     flash('{} をグループに追加しました'.format(add_user), category='alert alert-success')
 
-    return redirect(url_for('group', group_name=group_name))
+    return jsonify({"group_name": group_name}), 200  # OK
+    # return redirect(url_for('group', group_name=group_name))
 
 
 @app.route('/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
@@ -1029,10 +1040,14 @@ def remove_from_group(group_name):
         if members.member6 is not None:
             group_members.append(members.member6)
 
-        return render_template("remove_from_group.html", group_name=group_name, members=group_members)
+        return jsonify({
+            "group_name": group_name,
+            "group_members": group_members
+        }), 200  # OK
+        # return render_template("remove_from_group.html", group_name=group_name, members=group_members)
 
-    # POSTなら
-    remove_user = request.json['remove_user']
+    # DELETEなら
+    remove_user = request.json["remove_user"]
     members = db.session.query(GroupList).filter_by(
         group_name=group_name).first()
 
@@ -1052,7 +1067,8 @@ def remove_from_group(group_name):
 
     flash('{} をグループから削除しました'.format(remove_user),
           category='alert alert-success')
-    return redirect(url_for('group', group_name=group_name))
+    return None, 200  # OK
+    # return redirect(url_for('group', group_name=group_name))
 
 
 @app.route('/change_name', methods=['GET', 'POST'])
@@ -1064,14 +1080,16 @@ def change_name():
     user_name = request.cookies.get('user_name', None)
     if user_name is None:
         flash('ログインしてください', category='alert alert-danger')
-        return redirect(url_for('index'))
+        return None, 400
+        # return redirect(url_for('index'))
 
-    changed_name = request.json['changed_name']
+    changed_name = request.json["changed_name"]
 
     if db.session.query(UserList).filter_by(user_name=changed_name).first():
         error_message = 'ユーザー名 {} はすでに使用されています'.format(changed_name)
         flash(error_message, category='alert alert-danger')
-        return redirect(url_for('change_name'))
+        return None, 400
+        # return redirect(url_for('change_name'))
 
     user = db.session.query(UserList).filter_by(user_name=user_name).first()
     user.user_name = changed_name
