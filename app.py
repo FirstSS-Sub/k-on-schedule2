@@ -4,6 +4,7 @@ from flask import (
     redirect, url_for, request,
     session, flash, make_response, jsonify
 )
+from flask_cors import CORS  # 重要 VueからAPI叩く時にこれが必要
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy import or_
@@ -20,6 +21,9 @@ import os
 from google_calendar import holiday
 
 app = Flask(__name__)
+
+CORS(app)  # 重要 VueからAPI叩く時にこれが必要
+
 app.secret_key = os.urandom(24)
 
 app.config['JSON_AS_ASCII'] = False
@@ -131,7 +135,16 @@ def create_user():
     """
     if request.method == 'GET':
         # グループ登録画面に遷移
-        return jsonify({"土井": "康平"}), 200  # OK
+        return jsonify([
+            {
+                "last": "土井",
+                "first": "康平"
+            },
+            {
+                "last": "齋藤",
+                "first": "颯太"
+            }
+        ]), 200  # OK
         # return render_template('create_user.html', title='ユーザーの追加')
 
     # 登録フォームから送られてきた値を取得
