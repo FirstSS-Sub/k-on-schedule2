@@ -20,7 +20,7 @@ import os
 
 from google_calendar import holiday
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../dist/static', template_folder='../dist')
 
 CORS(app)  # 重要 VueからAPI叩く時にこれが必要
 
@@ -116,9 +116,10 @@ class CommentList(db.Model):
 """
 
 
-@app.route('/')
-def index():
-    return jsonify({"Hello": "World"})
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def index(path):
+    return render_template('index.html')
 
 
 @app.route('/test', methods=['GET', 'POST'])
