@@ -17,6 +17,7 @@ datetime = "*"
 httplib2 = "*"
 oauth2client = "*"
 apiclient = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
