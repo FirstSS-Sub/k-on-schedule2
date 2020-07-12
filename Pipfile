@@ -6,6 +6,17 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+flask = "*"
+flask-restful = "*"
+sqlalchemy = "*"
+numpy = "*"
+flask-sqlalchemy = "*"
+flask-cors = "*"
+werkzeug = "*"
+datetime = "*"
+httplib2 = "*"
+oauth2client = "*"
+apiclient = "*"
 
 [requires]
 python_version = "3.7"
