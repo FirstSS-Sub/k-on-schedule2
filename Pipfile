@@ -20,3 +20,6 @@ apiclient = "*"
 
 [requires]
 python_version = "3.7"
+
+[scripts]
+start = "python backend/app.py"
