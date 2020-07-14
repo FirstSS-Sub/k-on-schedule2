@@ -5,13 +5,14 @@ from flask import (
     session, flash, make_response, jsonify
 )
 from flask_cors import CORS  # 重要 VueからAPI叩く時にこれが必要
+from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user, login_required # ログイン
 from flask_sqlalchemy import SQLAlchemy
+
 from sqlalchemy import create_engine
 from sqlalchemy import or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-# from flask_httpauth import HTTPBasicAuth
-# from flask_login import LoginManager, logout_user
+
 from werkzeug.security import *
 import numpy as np
 from datetime import *
@@ -33,6 +34,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
 # db.create_all()
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 
 """
 dbへアクセス
@@ -63,8 +69,8 @@ CRUD操作
 """
 
 
-class UserList(db.Model):
-    __tablename__ = "UserList"
+class User(UserMixin, db.Model):
+    __tablename__ = "User"
     id = db.Column(db.Integer(), primary_key=True)
     user_name = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
@@ -80,14 +86,14 @@ class UserList(db.Model):
     comment = db.Column(db.String(255), nullable=False, default="")
 
     def __repr__(self):
-        return "UserList<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}>".format(
+        return "User<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}>".format(
             self.id, self.user_name, self.password, self.email, self.thu, self.fri, self.sat, self.sun, self.mon,
             self.tue, self.wed, self.update, self.comment)
 
 
-class GroupList(db.Model):
+class Group(db.Model):
     # 最大６人
-    __tablename__ = "GroupList"
+    __tablename__ = "Group"
     id = db.Column(db.Integer(), primary_key=True)
     group_name = db.Column(db.String(100), nullable=False)
     member1 = db.Column(db.String(100))
@@ -98,7 +104,7 @@ class GroupList(db.Model):
     member6 = db.Column(db.String(100))
 
     def __repr__(self):
-        return "GroupList<{}, {}, {}, {}, {}, {}, {}, {}>".format(
+        return "Group<{}, {}, {}, {}, {}, {}, {}, {}>".format(
             self.id, self.group_name, self.member1, self.member2, self.member3, self.member4, self.member5,
             self.member6)
 
@@ -114,6 +120,23 @@ class CommentList(db.Model):
     def __repr__(self):
         return "CommentList<{}, {}, {}>".format(self.id, self.user_name, self.comment)
 """
+
+# flask_loginのセッションの期限を設定
+@app.before_request
+def before_request():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(hours=24)
+
+
+# 未認証の際のリダイレクト先を設定
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect(url_for('login'))
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 @app.route('/', defaults={'path': ''})
@@ -151,13 +174,14 @@ def create_user():
     # 登録フォームから送られてきた値を取得
     user_name = request.json['user_name']
     password = request.json['password']
+    email = request.json['email']
     app.logger.info(user_name)
-    app.logger.info(password)
+    # app.logger.info(password)
 
     # エラーチェック
     error_message = None
 
-    if db.session.query(UserList).filter_by(user_name=user_name).first():
+    if db.session.query(User).filter_by(user_name=user_name).first():
         error_message = 'ユーザー名 {} はすでに使用されています'.format(user_name)
         app.logger.info(error_message)
 
@@ -167,12 +191,16 @@ def create_user():
         return None, 400
 
     # ハッシュ化する
-    user = UserList(user_name=user_name,
-                    password=generate_password_hash(password))
+    user = User(user_name=user_name,
+                password=generate_password_hash(password),
+                email=email)
+
     db.session.add(user)
     db.session.commit()
 
-    app.logger.info(user.user_name)
+    login_user(user)
+
+    app.logger.info("created: ", user.user_name)
 
     flash('ユーザー登録が完了しました', category='alert alert-info')
 
@@ -193,9 +221,11 @@ def create_user():
 
 
 @app.route('/create_group', methods=['GET', 'POST'])
+@login_required
 def create_group():
-    # user_name = request.cookies.get('user_name', None)
-    user_name = request.json["user_name"]
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user_name = user.user_name
+    # user_name = request.json["user_name"]
     """
     GET ：グループ登録画面に遷移
     POST：グループ登録処理を実施
@@ -217,7 +247,7 @@ def create_group():
 
     if not group_name:
         error_message = 'グループ名を入力してください'
-    elif db.session.query(GroupList).filter_by(group_name=group_name).first() is not None:
+    elif db.session.query(Group).filter_by(group_name=group_name).first() is not None:
         error_message = 'グループ名 {} はすでに使用されています'.format(group_name)
 
     if error_message is not None:
@@ -226,7 +256,7 @@ def create_group():
         return redirect(url_for('create_group'))
 
     # エラーがなければテーブルに登録する
-    group = GroupList(group_name=group_name, member1=user_name)
+    group = Group(group_name=group_name, member1=user_name)
     db.session.add(group)
     db.session.commit()
 
@@ -241,19 +271,22 @@ def login():
     GET ：ログイン画面に遷移
     POST：ログイン処理を実施
     """
+
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+
     if request.method == 'GET':
-        user_name = request.cookies.get('user_name', None)
+        user_name = user.user_name
         if user_name is None:
             # ログイン画面に遷移
             return render_template('login.html',
                                    title='ログイン')
         else:
-            groups = db.session.query(GroupList).filter(or_(GroupList.member1 == user_name,
-                                                            GroupList.member2 == user_name,
-                                                            GroupList.member3 == user_name,
-                                                            GroupList.member4 == user_name,
-                                                            GroupList.member5 == user_name,
-                                                            GroupList.member6 == user_name)).all()
+            groups = db.session.query(Group).filter(or_(Group.member1 == user_name,
+                                                            Group.member2 == user_name,
+                                                            Group.member3 == user_name,
+                                                            Group.member4 == user_name,
+                                                            Group.member5 == user_name,
+                                                            Group.member6 == user_name)).all()
 
             participating_group = []
             for g in groups:
@@ -272,7 +305,7 @@ def login():
     # ユーザー名とパスワードのチェック
     error_message = None
 
-    user = db.session.query(UserList).filter_by(user_name=user_name).first()
+    user = db.session.query(User).filter_by(user_name=user_name).first()
 
     if user is None:
         error_message = 'ユーザー名が正しくありません'
@@ -288,12 +321,12 @@ def login():
         # return redirect(url_for('login'))
 
     ### エラーがなければクッキーに情報を保存してhomeへ ###
-    groups = db.session.query(GroupList).filter(or_(GroupList.member1 == user_name,
-                                                    GroupList.member2 == user_name,
-                                                    GroupList.member3 == user_name,
-                                                    GroupList.member4 == user_name,
-                                                    GroupList.member5 == user_name,
-                                                    GroupList.member6 == user_name)).all()
+    groups = db.session.query(Group).filter(or_(Group.member1 == user_name,
+                                                    Group.member2 == user_name,
+                                                    Group.member3 == user_name,
+                                                    Group.member4 == user_name,
+                                                    Group.member5 == user_name,
+                                                    Group.member6 == user_name)).all()
 
     participating_group = []
     for g in groups:
@@ -309,14 +342,20 @@ def login():
     expires = int(datetime.now().timestamp()) + max_age
     response.set_cookie('user_name', value=user.user_name, max_age=max_age)
     #                   ,expires=expires, path='/', domain=domain, secure=None, httponly=False)
+    login_user(user)  # flask-loginを使ってuserをログイン
+    return redirect(request.args.get("next") or url_for("index"))  # 元々いくはずだったページへ遷移
+    """
     return jsonify({"user_name": user_name,
                     "participating_group": participating_group}), 202  # accepted
+    """
     # return response
 
 
 @app.route('/home')
+@login_required
 def home():
-    user_name = request.cookies.get('user_name', None)
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user_name = user.user_name
 
     if user_name is None:
         flash('ログインしてください', category='alert alert-danger')
@@ -326,9 +365,11 @@ def home():
 
 
 @app.route('/schedule', methods=['GET', 'POST'])
+@login_required
 def schedule():
-    # user_name = request.cookies.get('user_name', None)
-    user_name = request.json["user_name"]
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user_name = user.user_name
+    # user_name = request.json["user_name"]
 
     """
     GET ：日程登録画面に遷移
@@ -346,7 +387,7 @@ def schedule():
             }
             week_data.append(data)
 
-        user = db.session.query(UserList).filter_by(
+        user = db.session.query(User).filter_by(
             user_name=user_name).first()
 
         # 文字列が１文字ずつ分割されて配列になる
@@ -390,7 +431,7 @@ def schedule():
                 day += request.json["join-{}{}".format(i + 1, j + 1)]
             week_schedule.append(day)
 
-    user = db.session.query(UserList).filter_by(user_name=user_name).first()
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
     user.thu = week_schedule[0]
     user.fri = week_schedule[1]
     user.sat = week_schedule[2]
@@ -408,7 +449,7 @@ def schedule():
     # コメント処理
     comment = request.json['comment']
 
-    user = db.session.query(UserList).filter_by(user_name=user_name).first()
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
     user.comment = comment
     db.session.add(user)
     db.session.commit()
@@ -417,9 +458,10 @@ def schedule():
 
 
 @app.route('/group/<int:group_name>', methods=['GET', 'POST'])
+@login_required
 def group(group_name):
     user_name = request.json["user_name"]
-    members = db.session.query(GroupList).filter_by(
+    members = db.session.query(Group).filter_by(
         group_name=group_name).first()
 
     if user_name is None:
@@ -455,8 +497,8 @@ def group(group_name):
 
         # 休日判定のリストを作成
         """
-        # 誰でもいいのでUserListの一番最初の人のデータから休日判定をする
-        user = db.session.query(UserList).first()
+        # 誰でもいいのでUserの一番最初の人のデータから休日判定をする
+        user = db.session.query(User).first()
         """
         # 上の記述だと回答していない先週のデータを持ってきてしまう可能性があるため、
         # google_calendar の holiday関数からデータを持ってくる
@@ -514,7 +556,7 @@ def group(group_name):
             batsu_list.append(temp_batsu)
 
         for member in group_members:
-            user = db.session.query(UserList).filter_by(
+            user = db.session.query(User).filter_by(
                 user_name=member).first()
 
             # 文字列が１文字ずつ分割されて配列になる
@@ -665,7 +707,7 @@ def group(group_name):
         # メンバーのupdateフラグを配列に格納
         update_flags = []
         for member in group_members:
-            user = db.session.query(UserList).filter_by(
+            user = db.session.query(User).filter_by(
                 user_name=member).first()
             update_flags.append(user.update)
 
@@ -692,7 +734,7 @@ def group(group_name):
         all_members_data = []
 
         for member in group_members:
-            user = db.session.query(UserList).filter_by(
+            user = db.session.query(User).filter_by(
                 user_name=member).first()
 
             member_data = []
@@ -920,14 +962,14 @@ def group(group_name):
         # メンバーのupdateフラグを配列に格納
         update_flags = []
         for member in group_members:
-            user = db.session.query(UserList).filter_by(
+            user = db.session.query(User).filter_by(
                 user_name=member).first()
             update_flags.append(user.update)
 
         # コメント処理
         comment_list = []
         for member in group_members:
-            user = db.session.query(UserList).filter_by(
+            user = db.session.query(User).filter_by(
                 user_name=member).first()
             if user.comment != "":
                 comment_list.append("{}: {}".format(member, user.comment))
@@ -994,6 +1036,7 @@ def group(group_name):
 
 
 @app.route('/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
+@login_required
 def add_to_group(group_name):
     if request.method == 'GET':
         return render_template("add_to_group.html")
@@ -1001,11 +1044,11 @@ def add_to_group(group_name):
     # POSTなら
     add_user = request.json["add_user"]
 
-    if db.session.query(UserList).filter_by(user_name=add_user).first() is None:
+    if db.session.query(User).filter_by(user_name=add_user).first() is None:
         flash('ユーザーが存在しません', category='alert alert-danger')
         return redirect(url_for('add_to_group', group_name=group_name))
 
-    group = db.session.query(GroupList).filter_by(
+    group = db.session.query(Group).filter_by(
         group_name=group_name).first()
     if (group.member1 or group.member1 or group.member1 or group.member1 or group.member1) == add_user:
         flash('{} は既にグループに加入しています'.format(add_user),
@@ -1034,9 +1077,10 @@ def add_to_group(group_name):
 
 
 @app.route('/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
+@login_required
 def remove_from_group(group_name):
     if request.method == 'GET':
-        members = db.session.query(GroupList).filter_by(
+        members = db.session.query(Group).filter_by(
             group_name=group_name).first()
         app.logger.info(members)
 
@@ -1063,7 +1107,7 @@ def remove_from_group(group_name):
 
     # DELETEなら
     remove_user = request.json["remove_user"]
-    members = db.session.query(GroupList).filter_by(
+    members = db.session.query(Group).filter_by(
         group_name=group_name).first()
 
     if members.member1 == remove_user:
@@ -1087,12 +1131,15 @@ def remove_from_group(group_name):
 
 
 @app.route('/change_name', methods=['GET', 'POST'])
+@login_required
 def change_name():
     if request.method == 'GET':
         return render_template("change_name.html")
 
     # POSTなら
-    user_name = request.cookies.get('user_name', None)
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+
+    user_name = user.user_name
     if user_name is None:
         flash('ログインしてください', category='alert alert-danger')
         return None, 400
@@ -1100,23 +1147,23 @@ def change_name():
 
     changed_name = request.json["changed_name"]
 
-    if db.session.query(UserList).filter_by(user_name=changed_name).first():
+    if db.session.query(User).filter_by(user_name=changed_name).first():
         error_message = 'ユーザー名 {} はすでに使用されています'.format(changed_name)
         flash(error_message, category='alert alert-danger')
         return None, 400
         # return redirect(url_for('change_name'))
 
-    user = db.session.query(UserList).filter_by(user_name=user_name).first()
+    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
     user.user_name = changed_name
     db.session.add(user)
     db.session.commit()
 
-    groups = db.session.query(GroupList).filter(or_(GroupList.member1 == user_name,
-                                                    GroupList.member2 == user_name,
-                                                    GroupList.member3 == user_name,
-                                                    GroupList.member4 == user_name,
-                                                    GroupList.member5 == user_name,
-                                                    GroupList.member6 == user_name)).all()
+    groups = db.session.query(Group).filter(or_(Group.member1 == user_name,
+                                                    Group.member2 == user_name,
+                                                    Group.member3 == user_name,
+                                                    Group.member4 == user_name,
+                                                    Group.member5 == user_name,
+                                                    Group.member6 == user_name)).all()
 
     for g in groups:
         if g.member1 == user_name:

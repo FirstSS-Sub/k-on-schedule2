@@ -18,6 +18,7 @@ httplib2 = "*"
 oauth2client = "*"
 apiclient = "*"
 gunicorn = "*"
+flask-login = "*"
 
 [requires]
 python_version = "3.7"
