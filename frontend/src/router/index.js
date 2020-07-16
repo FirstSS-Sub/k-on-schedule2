@@ -25,18 +25,23 @@ const routes = [
   },
   {
     path: '/login',
-    name: 'login',
+    name: 'Login',
     component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue')
   },
   {
     path: '/create_user',
-    name: 'create_user',
+    name: 'CreateUser',
     component: () => import(/* webpackChunkName: "create_user" */ '../views/create_user.vue')
   },
   {
     path: '/schedule',
     name: 'Schedule',
-    component: () => import(/* webpackChunkName: "create_user" */ '../views/Schedule.vue')
+    component: () => import(/* webpackChunkName: "schedule" */ '../views/Schedule.vue')
+  },
+  {
+    path: '/test_db',
+    name: 'TestDB',
+    component: () => import(/* webpackChunkName: "test_db" */ '../views/TestDB.vue')
   }
 ]
 
