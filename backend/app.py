@@ -364,7 +364,7 @@ def home():
     return render_template('home.html', user_name=user_name)
 
 
-@app.route('/schedule', methods=['GET', 'POST'])
+@app.route('/api/schedule', methods=['GET', 'POST'])
 @login_required
 def schedule():
     user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
