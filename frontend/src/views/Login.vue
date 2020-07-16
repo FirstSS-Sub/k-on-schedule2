@@ -34,9 +34,9 @@
   </v-card>
   -->
   <div class="login">
-      <div id="login">
+    <h1>ログイン</h1>
     <div>
-      <input type="text" placeholder="ログインID" v-model="userid">
+      <input type="text" placeholder="ユーザ名" v-model="user_name">
     </div>
     <div>
       <input type="text" placeholder="パスワード" v-model="password">
@@ -47,17 +47,17 @@
 <script>
 
 export default {
-  name: 'Login',
+  name: 'login',
   data: function () {
     return {
-      userid: '',
+      user_name: '',
       password: ''
     }
   },
   methods: {
     login: function () {
       // auth.login(this.userid,this.password)
-      window.alert('userid:' + this.userid + '\n' + 'password:' + this.password)
+      window.alert('user_name:' + this.user_name + '\n' + 'password:' + this.password)
     }
   }
 }
