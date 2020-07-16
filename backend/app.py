@@ -151,7 +151,7 @@ def test():
     return render_template("index.html")
 
 
-@app.route('/create_user', methods=['GET', 'POST'])
+@app.route('/api/create_user', methods=['GET', 'POST'])
 def create_user():
     """
     GET ：ユーザー登録画面に遷移
@@ -220,7 +220,7 @@ def create_user():
     # return response
 
 
-@app.route('/create_group', methods=['GET', 'POST'])
+@app.route('/api/create_group', methods=['GET', 'POST'])
 @login_required
 def create_group():
     user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
@@ -265,7 +265,7 @@ def create_group():
     # return redirect(url_for('index'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/api/login', methods=['GET', 'POST'])
 def login():
     """
     GET ：ログイン画面に遷移
@@ -351,7 +351,7 @@ def login():
     # return response
 
 
-@app.route('/home')
+@app.route('/api/home')
 @login_required
 def home():
     user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
@@ -457,7 +457,7 @@ def schedule():
     return redirect(url_for('login'))
 
 
-@app.route('/group/<int:group_name>', methods=['GET', 'POST'])
+@app.route('/api/group/<int:group_name>', methods=['GET', 'POST'])
 @login_required
 def group(group_name):
     user_name = request.json["user_name"]
@@ -1035,7 +1035,7 @@ def group(group_name):
         ##############################################
 
 
-@app.route('/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
+@app.route('/api/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
 @login_required
 def add_to_group(group_name):
     if request.method == 'GET':
@@ -1076,7 +1076,7 @@ def add_to_group(group_name):
     # return redirect(url_for('group', group_name=group_name))
 
 
-@app.route('/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
+@app.route('/api/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
 @login_required
 def remove_from_group(group_name):
     if request.method == 'GET':
@@ -1130,7 +1130,7 @@ def remove_from_group(group_name):
     # return redirect(url_for('group', group_name=group_name))
 
 
-@app.route('/change_name', methods=['GET', 'POST'])
+@app.route('/api/change_name', methods=['GET', 'POST'])
 @login_required
 def change_name():
     if request.method == 'GET':
