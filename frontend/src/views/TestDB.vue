@@ -19,7 +19,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(user, index) in userList" v-bind:index="index">
+      <tr v-for="(user, index) in userList" v-bind:key="index">
         <td>{{ user.id }}</td>
         <td>{{ user.user_name }}</td>
         <td>{{ user.password }}</td>
@@ -48,7 +48,7 @@ export default {
       userList: []
     }
   },
-  created() {
+  created () {
     this.$axios
       .get('/api/test_db')
       .then(res => {

@@ -31,7 +31,7 @@ const routes = [
   {
     path: '/create_user',
     name: 'CreateUser',
-    component: () => import(/* webpackChunkName: "create_user" */ '../views/create_user.vue')
+    component: () => import(/* webpackChunkName: "create_user" */ '../views/CreateUser.vue')
   },
   {
     path: '/schedule',

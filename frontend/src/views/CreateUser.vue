@@ -7,11 +7,11 @@
     </div>
     <div>
       <label>パスワード：</label>
-      <input type="text" placeholder="パスワード" v-model="password">
+      <input type="password" placeholder="パスワード" v-model="password">
     </div>
     <div>
       <label>パスワード（確認用）：</label>
-      <input type="text" placeholder="パスワード（確認用）" v-model="password_check">
+      <input type="password" placeholder="パスワード（確認用）" v-model="password_check">
     </div>
     <div>
       <label>メールアドレス：</label>
