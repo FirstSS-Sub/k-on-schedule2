@@ -52,7 +52,7 @@ export default {
     this.$axios
       .get('/api/test_db')
       .then(res => {
-        this.datalist = res.data
+        this.userList = res.data
       })
       .catch(error => {
         console.log(error)

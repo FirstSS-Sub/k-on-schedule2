@@ -33,7 +33,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
-db.create_all()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -121,6 +120,9 @@ class CommentList(db.Model):
         return "CommentList<{}, {}, {}>".format(self.id, self.user_name, self.comment)
 """
 
+db.create_all()
+
+
 # flask_loginのセッションの期限を設定
 @app.before_request
 def before_request():
@@ -196,11 +198,12 @@ def create_user():
         # return render_template('create_user.html', title='ユーザーの追加')
 
     # 登録フォームから送られてきた値を取得
-    user_name = request.json['user_name']
-    password = request.json['password']
-    email = request.json['email']
+    user_name = str(request.json['user_name'])
+    password = str(request.json['password'])
+    email = str(request.json['email'])
     app.logger.info(user_name)
     # app.logger.info(password)
+    app.logger.info(email)
 
     # エラーチェック
     error_message = None
@@ -215,26 +218,29 @@ def create_user():
         return None, 400
 
     # ハッシュ化する
-    user = User(user_name=user_name,
-                password=generate_password_hash(password),
-                email=email)
+    user = User()
+    user.user_name = user_name
+    user.password = generate_password_hash(password)
+    user.email = email
+
 
     db.session.add(user)
     db.session.commit()
 
     login_user(user)
 
-    app.logger.info("created: ", user.user_name)
+    app.logger.info("created: " + user.user_name)
 
     flash('ユーザー登録が完了しました', category='alert alert-info')
 
     # make_responseでレスポンスオブジェクトを生成する
-    response = make_response(render_template(
-        'home.html', user_name=user_name))
+    # response = make_response(render_template(
+    #     'home.html', user_name=user_name))
 
     ################################
     return jsonify({"user_name": user_name}), 201  # created
 
+    """
     # Cookieの設定を行う
     max_age = 60 * 60 * 24  # 1日
     # max_age = 30 # テスト用
@@ -242,6 +248,7 @@ def create_user():
     response.set_cookie('user_name', value=user.user_name, max_age=max_age)
     #                   ,expires=expires, path='/', domain=domain, secure=None, httponly=False)
     # return response
+    """
 
 
 @app.route('/api/create_group', methods=['GET', 'POST'])
