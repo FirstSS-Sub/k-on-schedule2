@@ -22,7 +22,7 @@ export default {
   methods: {
     onamae: function () {
       this.$axios
-        .get('/create_user')
+        .get('/api/create_user')
         .then(res => {
           this.datalist = res.data
         })

@@ -15,7 +15,7 @@ export default {
   },
   created() {
     this.$axios
-      .get('/schedule')
+      .get('/api/schedule')
       .then(res => {
         this.datalist = res.data
       })
