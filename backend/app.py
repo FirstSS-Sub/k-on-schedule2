@@ -33,7 +33,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
-# db.create_all()
+db.create_all()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -145,10 +145,34 @@ def index(path):
     return render_template('index.html')
 
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route('/api/test_db', methods=['GET', 'POST'])
 def test():
+    """
     app.logger.info(request.form['join-11'])
     return render_template("index.html")
+    """
+    user_list = db.session.query(User).all()
+    json_list = []
+    for user in user_list:
+        json_list.append(
+            {
+                "id": user.id,
+                "user_name": user.user_name,
+                "password": user.password,
+                "email": user.email,
+                "thu": user.thu,
+                "fri": user.fri,
+                "sat": user.sat,
+                "sun": user.sun,
+                "mon": user.mon,
+                "tue": user.tue,
+                "wed": user.wed,
+                "update": user.update,
+                "comment": user.comment
+            }
+        )
+
+    return jsonify(json_list)
 
 
 @app.route('/api/create_user', methods=['GET', 'POST'])
