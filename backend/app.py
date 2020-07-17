@@ -33,7 +33,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
-# db.create_all()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -121,6 +120,9 @@ class CommentList(db.Model):
         return "CommentList<{}, {}, {}>".format(self.id, self.user_name, self.comment)
 """
 
+db.create_all()
+
+
 # flask_loginのセッションの期限を設定
 @app.before_request
 def before_request():
@@ -145,13 +147,37 @@ def index(path):
     return render_template('index.html')
 
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route('/api/test_db', methods=['GET', 'POST'])
 def test():
+    """
     app.logger.info(request.form['join-11'])
     return render_template("index.html")
+    """
+    user_list = db.session.query(User).all()
+    json_list = []
+    for user in user_list:
+        json_list.append(
+            {
+                "id": user.id,
+                "user_name": user.user_name,
+                "password": user.password,
+                "email": user.email,
+                "thu": user.thu,
+                "fri": user.fri,
+                "sat": user.sat,
+                "sun": user.sun,
+                "mon": user.mon,
+                "tue": user.tue,
+                "wed": user.wed,
+                "update": user.update,
+                "comment": user.comment
+            }
+        )
+
+    return jsonify(json_list)
 
 
-@app.route('/create_user', methods=['GET', 'POST'])
+@app.route('/api/create_user', methods=['GET', 'POST'])
 def create_user():
     """
     GET ：ユーザー登録画面に遷移
@@ -172,11 +198,12 @@ def create_user():
         # return render_template('create_user.html', title='ユーザーの追加')
 
     # 登録フォームから送られてきた値を取得
-    user_name = request.json['user_name']
-    password = request.json['password']
-    email = request.json['email']
+    user_name = str(request.json['user_name'])
+    password = str(request.json['password'])
+    email = str(request.json['email'])
     app.logger.info(user_name)
     # app.logger.info(password)
+    app.logger.info(email)
 
     # エラーチェック
     error_message = None
@@ -191,26 +218,29 @@ def create_user():
         return None, 400
 
     # ハッシュ化する
-    user = User(user_name=user_name,
-                password=generate_password_hash(password),
-                email=email)
+    user = User()
+    user.user_name = user_name
+    user.password = generate_password_hash(password)
+    user.email = email
+
 
     db.session.add(user)
     db.session.commit()
 
     login_user(user)
 
-    app.logger.info("created: ", user.user_name)
+    app.logger.info("created: " + user.user_name)
 
     flash('ユーザー登録が完了しました', category='alert alert-info')
 
     # make_responseでレスポンスオブジェクトを生成する
-    response = make_response(render_template(
-        'home.html', user_name=user_name))
+    # response = make_response(render_template(
+    #     'home.html', user_name=user_name))
 
     ################################
     return jsonify({"user_name": user_name}), 201  # created
 
+    """
     # Cookieの設定を行う
     max_age = 60 * 60 * 24  # 1日
     # max_age = 30 # テスト用
@@ -218,9 +248,10 @@ def create_user():
     response.set_cookie('user_name', value=user.user_name, max_age=max_age)
     #                   ,expires=expires, path='/', domain=domain, secure=None, httponly=False)
     # return response
+    """
 
 
-@app.route('/create_group', methods=['GET', 'POST'])
+@app.route('/api/create_group', methods=['GET', 'POST'])
 @login_required
 def create_group():
     user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
@@ -265,7 +296,7 @@ def create_group():
     # return redirect(url_for('index'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/api/login', methods=['GET', 'POST'])
 def login():
     """
     GET ：ログイン画面に遷移
@@ -351,7 +382,7 @@ def login():
     # return response
 
 
-@app.route('/home')
+@app.route('/api/home')
 @login_required
 def home():
     user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
@@ -364,7 +395,7 @@ def home():
     return render_template('home.html', user_name=user_name)
 
 
-@app.route('/schedule', methods=['GET', 'POST'])
+@app.route('/api/schedule', methods=['GET', 'POST'])
 @login_required
 def schedule():
     user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
@@ -457,7 +488,7 @@ def schedule():
     return redirect(url_for('login'))
 
 
-@app.route('/group/<int:group_name>', methods=['GET', 'POST'])
+@app.route('/api/group/<int:group_name>', methods=['GET', 'POST'])
 @login_required
 def group(group_name):
     user_name = request.json["user_name"]
@@ -1035,7 +1066,7 @@ def group(group_name):
         ##############################################
 
 
-@app.route('/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
+@app.route('/api/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
 @login_required
 def add_to_group(group_name):
     if request.method == 'GET':
@@ -1076,7 +1107,7 @@ def add_to_group(group_name):
     # return redirect(url_for('group', group_name=group_name))
 
 
-@app.route('/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
+@app.route('/api/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
 @login_required
 def remove_from_group(group_name):
     if request.method == 'GET':
@@ -1130,7 +1161,7 @@ def remove_from_group(group_name):
     # return redirect(url_for('group', group_name=group_name))
 
 
-@app.route('/change_name', methods=['GET', 'POST'])
+@app.route('/api/change_name', methods=['GET', 'POST'])
 @login_required
 def change_name():
     if request.method == 'GET':
@@ -1203,4 +1234,4 @@ def change_name():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

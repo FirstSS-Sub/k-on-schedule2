@@ -5,7 +5,9 @@
       <router-link to="/about">About</router-link> |
       <router-link to="/user">User</router-link> |
       <router-link to="/login">Login</router-link> |
-      <router-link to="/create_user">Create_User</router-link>
+      <router-link to="/create_user">CreateUser</router-link> |
+      <router-link to="/schedule">Schedule</router-link> |
+      <router-link to="/test_db">TestDB</router-link>
     </div>
     <router-view/>
   </div>

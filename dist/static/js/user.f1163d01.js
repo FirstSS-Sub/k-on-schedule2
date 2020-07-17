@@ -1,2 +1,2 @@
 (window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["user"],{1511:function(e,n,s){"use strict";s.r(n);var t=function(){var e=this,n=e.$createElement;e._self._c;return e._m(0)},r=[function(){var e=this,n=e.$createElement,s=e._self._c||n;return s("div",{staticClass:"User"},[s("h1",[e._v("This is a Userpage.")])])}],a={name:"User",components:{}},c=a,i=s("2877"),l=Object(i["a"])(c,t,r,!1,null,null,null);n["default"]=l.exports}}]);
-//# sourceMappingURL=user.3fcab288.js.map
+//# sourceMappingURL=user.f1163d01.js.map

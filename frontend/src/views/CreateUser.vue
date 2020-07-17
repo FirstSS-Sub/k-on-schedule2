@@ -7,17 +7,18 @@
     </div>
     <div>
       <label>パスワード：</label>
-      <input type="text" placeholder="パスワード" v-model="password">
+      <input type="password" placeholder="パスワード" v-model="password">
     </div>
     <div>
       <label>パスワード（確認用）：</label>
-      <input type="text" placeholder="パスワード（確認用）" v-model="password_check">
+      <input type="password" placeholder="パスワード（確認用）" v-model="password_check">
     </div>
     <div>
       <label>メールアドレス：</label>
       <input type="text" placeholder="メールアドレス" v-model="email">
     </div>
     <button @click="create_user()">新規アカウント作成</button>
+  </div>
 </template>
 
 <script>
@@ -38,7 +39,24 @@ export default {
       } else if (this.password !== this.password_check) {
         window.alert('パスワードが一致していません。' + '\n' + 'もう一度確認した上で、パスワードを記入し直してください。')
       } else {
-        window.alert('user_name:' + this.user_name + '\n' + 'password:' + this.password + '\n' + 'email:' + this.email)
+        this.$axios
+          .post('/api/create_user', {
+            user_name: this.user_name,
+            password: this.password,
+            email: this.email
+          })
+          .then(() => {
+            // レスポンスが200の時の処理
+            console.log('うぇいよー')
+            window.alert(
+              'user_name:' + this.user_name + '\n' +
+              'password:' + this.password + '\n' +
+              'email:' + this.email + '\n ' +
+              '登録しました。')
+          })
+          .catch(error => {
+            console.log(error)
+          })
       }
     }
   }
