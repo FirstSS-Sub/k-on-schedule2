@@ -2,22 +2,33 @@
   <div class="create_user">
     <h1>新規アカウント作成</h1>
     <div>
-      <label>ユーザ名：</label>
-      <input type="text" placeholder="ユーザ名" v-model="user_name">
-    </div>
-    <div>
-      <label>パスワード：</label>
-      <input type="password" placeholder="パスワード" v-model="password">
-    </div>
-    <div>
-      <label>パスワード（確認用）：</label>
-      <input type="password" placeholder="パスワード（確認用）" v-model="password_check">
-    </div>
-    <div>
-      <label>メールアドレス：</label>
-      <input type="text" placeholder="メールアドレス" v-model="email">
-    </div>
-    <button @click="create_user()">新規アカウント作成</button>
+      <table class="form-table">
+        <tbody>
+          <tr>
+            <th>ユーザ名</th>
+            <td><input type="text" placeholder="ユーザ名" v-model="user_name">
+            </td>
+          </tr>
+          <tr>
+            <th>パスワード</th>
+            <td><input type="password" placeholder="パスワード" v-model="password">
+            </td>
+          </tr>
+          <tr>
+            <th>パスワード（確認用）</th>
+            <td><input type="password" placeholder="パスワード（確認用）" v-model="password_check">
+            </td>
+          </tr>
+          <tr>
+            <th>メールアドレス</th>
+            <td><input type="email" placeholder="メールアドレス" v-model="email">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    <p>
+      <button @click="create_user()">新規アカウント作成</button>
+    </p>
   </div>
 </template>
 
@@ -62,3 +73,11 @@ export default {
   }
 }
 </script>
+
+<style scope src="./css/table_style.css"></style>
+
+<style scoped>
+.form-table th {
+    background: #CCFFCC;
+  }
+</style>
