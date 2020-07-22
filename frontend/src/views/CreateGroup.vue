@@ -12,7 +12,7 @@
         </tbody>
       </table>
     </div>
-    <p><button @click="create_user()">新規グループ作成</button></p>
+    <p><button @click="create_group()">新規グループ作成</button></p>
   </div>
 </template>
 
@@ -26,7 +26,7 @@ export default {
     }
   },
   methods: {
-    create_user: function () {
+    create_group: function () {
       window.alert('グループ名：' + this.group_name)
     }
   }
