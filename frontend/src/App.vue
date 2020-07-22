@@ -1,14 +1,16 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
-      <router-link to="/user">User</router-link> |
-      <router-link to="/login">Login</router-link> |
-      <router-link to="/create_user">CreateUser</router-link> |
-      <router-link to="/schedule">Schedule</router-link> |
-      <router-link to="/test_db">TestDB</router-link>|
-      <router-link to="/create_group">CreateGroup</router-link>
+      <ul>
+        <router-link tag="li" to="/"><a>Home</a></router-link>
+        <router-link tag="li" to="/about"><a>About</a></router-link>
+        <router-link tag="li" to="/user"><a>User</a></router-link>
+        <router-link tag="li" to="/login"><a>Login</a></router-link>
+        <router-link tag="li" to="/create_user"><a>CreateUser</a></router-link>
+        <router-link tag="li" to="/schedule"><a>Schedule</a></router-link>
+        <router-link tag="li" to="/test_db"><a>TestDB</a></router-link>
+        <router-link tag="li" to="/create_group"><a>CreateGroup</a></router-link>
+      </ul>
     </div>
     <router-view/>
   </div>
@@ -21,19 +23,10 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  /* background-image: url(./css/views/picture/background.jpg);    /* 背景画像指定 */
 }
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+body {
+  background-image: url(../public/static/background.jpg);    /* 背景画像指定 */
 }
 </style>
+
+<style scoped src="./css/globalnavi.css"></style>
