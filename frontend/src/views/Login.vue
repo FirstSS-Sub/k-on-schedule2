@@ -34,6 +34,7 @@
   </v-card>
   -->
   <div class="login">
+    <router-view/>
     <h1>ログイン</h1>
     <div>
       <table class="login-table">
@@ -52,6 +53,9 @@
       </table>
     </div>
     <p><button @click="login()">ログイン</button></p>
+    <div id="nav">
+      <router-link to="/Login_forget">パスワードを忘れた方はこちら</router-link>
+    </div>
   </div>
 </template>
 
@@ -91,10 +95,11 @@ export default {
 }
 </script>
 
-<style scope src="./css/table_style.css"></style>
+<style scoped src="./css/table_style.css"></style>
+<style scoped src="./css/router.css"></style>
 
 <style scoped>
 .login-table th {
-    background: #CCFFCC;
+    background: #FFCC66;
   }
 </style>

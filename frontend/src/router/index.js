@@ -47,6 +47,11 @@ const routes = [
     path: '/create_group',
     name: 'CreateGroup',
     component: () => import(/* webpackChunkName: "create_group" */ '../views/CreateGroup.vue')
+  },
+  {
+    path: '/login_forget',
+    name: 'Login_Forget',
+    component: () => import(/* webpackChunkName: "login_forget" */ '../views/Login_Forget.vue')
   }
 ]
 
