@@ -36,12 +36,22 @@
   <div class="login">
     <h1>ログイン</h1>
     <div>
-      <input type="text" placeholder="ユーザ名" v-model="user_name">
+      <table class="login-table">
+        <tbody>
+          <tr>
+            <th>ユーザ名</th>
+            <td><input type="text" placeholder="ユーザ名" v-model="user_name">
+            </td>
+          </tr>
+          <tr>
+            <th>パスワード</th>
+            <td><input type="text" placeholder="パスワード" v-model="password">
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div>
-      <input type="text" placeholder="パスワード" v-model="password">
-    </div>
-    <button @click="login()">ログイン</button>
+    <p><button @click="login()">ログイン</button></p>
   </div>
 </template>
 
@@ -80,3 +90,11 @@ export default {
   }
 }
 </script>
+
+<style scope src="./css/table_style.css"></style>
+
+<style scoped>
+.login-table th {
+    background: #CCFFCC;
+  }
+</style>

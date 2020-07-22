@@ -42,6 +42,11 @@ const routes = [
     path: '/test_db',
     name: 'TestDB',
     component: () => import(/* webpackChunkName: 'test_db' */ '../views/TestDB.vue')
+  },
+  {
+    path: '/create_group',
+    name: 'CreateGroup',
+    component: () => import(/* webpackChunkName: "create_group" */ '../views/CreateGroup.vue')
   }
 ]
 
