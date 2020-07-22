@@ -95,8 +95,8 @@ export default {
 }
 </script>
 
-<style scoped src="./css/table_style.css"></style>
-<style scoped src="./css/router.css"></style>
+<style scoped src="../css/table_style.css"></style>
+<style scoped src="../css/router.css"></style>
 
 <style scoped>
 .login-table th {

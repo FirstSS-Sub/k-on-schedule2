@@ -78,7 +78,7 @@ export default {
 }
 </script>
 
-<style scope src="./css/table_style.css"></style>
+<style scope src="../css/table_style.css"></style>
 
 <style scoped>
 .form-table th {
