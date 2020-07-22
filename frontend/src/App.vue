@@ -7,7 +7,8 @@
       <router-link to="/login">Login</router-link> |
       <router-link to="/create_user">CreateUser</router-link> |
       <router-link to="/schedule">Schedule</router-link> |
-      <router-link to="/test_db">TestDB</router-link>
+      <router-link to="/test_db">TestDB</router-link>|
+      <router-link to="/create_group">CreateGroup</router-link>
     </div>
     <router-view/>
   </div>
@@ -20,6 +21,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  /* background-image: url(./css/views/picture/background.jpg);    /* 背景画像指定 */
 }
 
 #nav {
