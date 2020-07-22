@@ -1,6 +1,6 @@
 <template>
-  <div class="TestDB">
-    <table class="vue_tbl">
+  <div class='TestDB'>
+    <table class='vue_tbl'>
       <thead>
       <tr>
         <th>id</th>
@@ -19,7 +19,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(user, index) in userList" v-bind:key="index">
+      <tr v-for='(user, index) in userList' v-bind:key='index'>
         <td>{{ user.id }}</td>
         <td>{{ user.user_name }}</td>
         <td>{{ user.password }}</td>

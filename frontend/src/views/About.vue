@@ -1,7 +1,7 @@
 <template>
   <div class="about">
     <h1>This is an about page</h1>
-    <button @click="onamae">お名前ボタン</button>
+    <button @click='onamae'>お名前ボタン</button>
     <ul>
       <!-- v-for は使っても使わなくてもkeyを設定しないとダメみたい -->
       <li v-for="(data, key) in datalist" v-bind:key="key">

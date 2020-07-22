@@ -1,10 +1,10 @@
 <template>
-    <!--<v-card class="elevation-1 pa-3 login-card">
+    <!--<v-card class='elevation-1 pa-3 login-card'>
     <v-card-text>
-      <div class="layout column align-center">
-        <h1 class="flex my-4 primary--text font-weight-bold">ログイン</h1>
+      <div class='layout column align-center'>
+        <h1 class='flex my-4 primary--text font-weight-bold'>ログイン</h1>
       </div>
-      <v-form ref="loginForm">
+      <v-form ref='loginForm'>
         <v-text-field
           append-icon="person"
           name="login"
@@ -52,6 +52,7 @@
       </table>
     </div>
     <p><button @click="login()">ログイン</button></p>
+  </div>
 </template>
 
 <script>
@@ -66,8 +67,25 @@ export default {
   },
   methods: {
     login: function () {
+      const sha256 = this.$crypto.createHash('sha256')
+      sha256.update(this.password)
+      const hashPass = sha256.digest('base64')
+
       // auth.login(this.userid,this.password)
-      window.alert('user_name:' + this.user_name + '\n' + 'password:' + this.password)
+      this.$axios
+        .post('/api/login', {
+          user_name: this.user_name,
+          password: hashPass
+        })
+        .then((res) => {
+          // レスポンスが200の時の処理
+          this.$cookies.set('jwt_token', res.data.access_token, { expires: 1 }) // 1日
+          window.alert('ログインしました。')
+        })
+        .catch(error => {
+          console.log(error)
+          window.alert(error.response.data.message)
+        })
     }
   }
 }
