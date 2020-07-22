@@ -50,8 +50,8 @@ const routes = [
   },
   {
     path: '/login_forget',
-    name: 'Login_Forget',
-    component: () => import(/* webpackChunkName: "login_forget" */ '../views/Login_Forget.vue')
+    name: 'LoginForget',
+    component: () => import(/* webpackChunkName: "login_forget" */ '../views/LoginForget.vue')
   }
 ]
 
