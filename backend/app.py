@@ -5,8 +5,13 @@ from flask import (
     session, flash, make_response, jsonify
 )
 from flask_cors import CORS  # 重要 VueからAPI叩く時にこれが必要
-from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user, login_required # ログイン
+# from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user, jwt_required  # ログイン
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import (
+    jwt_required, create_access_token,
+    get_jwt_identity, get_jti, get_raw_jwt,
+    JWTManager
+)
 
 from sqlalchemy import create_engine
 from sqlalchemy import or_
@@ -22,21 +27,18 @@ import os
 from google_calendar import holiday
 
 app = Flask(__name__, static_folder='../dist/static', template_folder='../dist')
-
-CORS(app)  # 重要 VueからAPI叩く時にこれが必要
+jwt = JWTManager(app)
 
 app.secret_key = os.urandom(24)
 
+CORS(app)  # 重要 VueからAPI叩く時にこれが必要
+
 app.config['JSON_AS_ASCII'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL') or 'sqlite:///k-on.db'  # or "postgresql://localhost/k-on"
+    'DATABASE_URL') or 'sqlite:///k-on.db'  # or 'postgresql://localhost/k-on"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
 
 
 """
@@ -68,7 +70,7 @@ CRUD操作
 """
 
 
-class User(UserMixin, db.Model):
+class User(db.Model):
     __tablename__ = "User"
     id = db.Column(db.Integer(), primary_key=True)
     user_name = db.Column(db.String(100), nullable=False)
@@ -108,6 +110,7 @@ class Group(db.Model):
             self.member6)
 
 
+
 """
 class CommentList(db.Model):
     # sqlalchemyでカラムを後から追加する方法がわからなかったので別のテーブルとして作成
@@ -123,28 +126,18 @@ class CommentList(db.Model):
 db.create_all()
 
 
-# flask_loginのセッションの期限を設定
-@app.before_request
-def before_request():
-    session.permanent = True
-    app.permanent_session_lifetime = timedelta(hours=24)
-
-
-# 未認証の際のリダイレクト先を設定
-@login_manager.unauthorized_handler
-def unauthorized_callback():
-    return redirect(url_for('login'))
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
     return render_template('index.html')
+
+
+@app.route('/api/get_login_user')
+@jwt_required
+def get_login_user():
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
+    app.logger.info(user.user_name)
+    return jsonify({"user_name": user.user_name})
 
 
 @app.route('/api/test_db', methods=['GET', 'POST'])
@@ -215,19 +208,21 @@ def create_user():
     if error_message is not None:
         # エラーがあれば、それを画面に表示させる
         flash(error_message, category='alert alert-danger')
-        return None, 400
+        return jsonify({"message": error_message}), 400
 
     # ハッシュ化する
     user = User()
     user.user_name = user_name
-    user.password = generate_password_hash(password)
+    user.password = password  # フロント側でハッシュ化している
     user.email = email
 
 
     db.session.add(user)
     db.session.commit()
 
-    login_user(user)
+    # idはいったんDBに登録してからでないと割り当てられないので、DBから呼び出したuserを使ってログインする
+    db_user = db.session.query(User).filter_by(user_name=user_name).first()
+    user.id = db_user.id
 
     app.logger.info("created: " + user.user_name)
 
@@ -252,9 +247,9 @@ def create_user():
 
 
 @app.route('/api/create_group', methods=['GET', 'POST'])
-@login_required
+@jwt_required
 def create_group():
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user_name = user.user_name
     # user_name = request.json["user_name"]
     """
@@ -303,8 +298,8 @@ def login():
     POST：ログイン処理を実施
     """
 
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
-
+    # user = db.session.query(User).filter_by(user_name=user_name).first()
+    """
     if request.method == 'GET':
         user_name = user.user_name
         if user_name is None:
@@ -326,6 +321,7 @@ def login():
             return jsonify({"user_name": user_name,
                             "participating_group": participating_group}), 202  # accepted
             # return render_template('home.html', user_name=user_name, part_group=participating_group)
+    """
 
     # ログイン処理
 
@@ -340,7 +336,7 @@ def login():
 
     if user is None:
         error_message = 'ユーザー名が正しくありません'
-    elif not check_password_hash(user.password, password):
+    elif not user.password == password:
         app.logger.info(user.password)
         app.logger.info(password)
         error_message = 'パスワードが正しくありません'
@@ -348,9 +344,10 @@ def login():
     if error_message is not None:
         # エラーがあればそれを表示したうえでログイン画面に遷移
         flash(error_message, category='alert alert-danger')
-        return None, 400
+        return jsonify({"message": error_message}), 400
         # return redirect(url_for('login'))
 
+    app.logger.info("aaaaaaaaaaaaaaaaaaaaaaaaaaa")
     ### エラーがなければクッキーに情報を保存してhomeへ ###
     groups = db.session.query(Group).filter(or_(Group.member1 == user_name,
                                                     Group.member2 == user_name,
@@ -358,11 +355,16 @@ def login():
                                                     Group.member4 == user_name,
                                                     Group.member5 == user_name,
                                                     Group.member6 == user_name)).all()
+    app.logger.info("aaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
     participating_group = []
     for g in groups:
         participating_group.append(g.group_name)
 
+    app.logger.info("aaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+
+    """
     # make_responseでレスポンスオブジェクトを生成する
     response = make_response(render_template(
         'home.html', user_name=user_name, part_group=participating_group))
@@ -376,16 +378,22 @@ def login():
     login_user(user)  # flask-loginを使ってuserをログイン
     return redirect(request.args.get("next") or url_for("index"))  # 元々いくはずだったページへ遷移
     """
+    """
     return jsonify({"user_name": user_name,
                     "participating_group": participating_group}), 202  # accepted
     """
+
+    # tokenの有効期限は1日。フロント側のcookieの期限と合わせる
+    access_token = create_access_token(identity=user.id, expires_delta=timedelta(days=1))
+
+    return jsonify({"access_token": access_token}), 202
     # return response
 
 
 @app.route('/api/home')
-@login_required
+@jwt_required
 def home():
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user_name = user.user_name
 
     if user_name is None:
@@ -396,9 +404,9 @@ def home():
 
 
 @app.route('/api/schedule', methods=['GET', 'POST'])
-@login_required
+@jwt_required
 def schedule():
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user_name = user.user_name
     # user_name = request.json["user_name"]
 
@@ -462,7 +470,7 @@ def schedule():
                 day += request.json["join-{}{}".format(i + 1, j + 1)]
             week_schedule.append(day)
 
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user.thu = week_schedule[0]
     user.fri = week_schedule[1]
     user.sat = week_schedule[2]
@@ -480,7 +488,7 @@ def schedule():
     # コメント処理
     comment = request.json['comment']
 
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user.comment = comment
     db.session.add(user)
     db.session.commit()
@@ -489,7 +497,7 @@ def schedule():
 
 
 @app.route('/api/group/<int:group_name>', methods=['GET', 'POST'])
-@login_required
+@jwt_required
 def group(group_name):
     user_name = request.json["user_name"]
     members = db.session.query(Group).filter_by(
@@ -1067,7 +1075,7 @@ def group(group_name):
 
 
 @app.route('/api/add_to_group/<string:group_name>', methods=['GET', 'DELETE'])
-@login_required
+@jwt_required
 def add_to_group(group_name):
     if request.method == 'GET':
         return render_template("add_to_group.html")
@@ -1108,7 +1116,7 @@ def add_to_group(group_name):
 
 
 @app.route('/api/remove_from_group/<string:group_name>', methods=['GET', 'POST'])
-@login_required
+@jwt_required
 def remove_from_group(group_name):
     if request.method == 'GET':
         members = db.session.query(Group).filter_by(
@@ -1162,13 +1170,13 @@ def remove_from_group(group_name):
 
 
 @app.route('/api/change_name', methods=['GET', 'POST'])
-@login_required
+@jwt_required
 def change_name():
     if request.method == 'GET':
         return render_template("change_name.html")
 
     # POSTなら
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
 
     user_name = user.user_name
     if user_name is None:
@@ -1184,7 +1192,7 @@ def change_name():
         return None, 400
         # return redirect(url_for('change_name'))
 
-    user = db.session.query(User).filter_by(user_name=current_user.user_name).first()
+    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user.user_name = changed_name
     db.session.add(user)
     db.session.commit()
@@ -1234,4 +1242,4 @@ def change_name():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)

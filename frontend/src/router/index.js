@@ -16,32 +16,32 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    component: () => import(/* webpackChunkName: 'about' */ '../views/About.vue')
   },
   {
     path: '/user',
     name: 'User',
-    component: () => import(/* webpackChunkName: "user" */ '../views/User.vue')
+    component: () => import(/* webpackChunkName: 'user' */ '../views/User.vue')
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue')
+    component: () => import(/* webpackChunkName: 'login' */ '../views/Login.vue')
   },
   {
     path: '/create_user',
     name: 'CreateUser',
-    component: () => import(/* webpackChunkName: "create_user" */ '../views/CreateUser.vue')
+    component: () => import(/* webpackChunkName: 'create_user' */ '../views/CreateUser.vue')
   },
   {
     path: '/schedule',
     name: 'Schedule',
-    component: () => import(/* webpackChunkName: "schedule" */ '../views/Schedule.vue')
+    component: () => import(/* webpackChunkName: 'schedule' */ '../views/Schedule.vue')
   },
   {
     path: '/test_db',
     name: 'TestDB',
-    component: () => import(/* webpackChunkName: "test_db" */ '../views/TestDB.vue')
+    component: () => import(/* webpackChunkName: 'test_db' */ '../views/TestDB.vue')
   }
 ]
 
