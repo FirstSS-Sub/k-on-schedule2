@@ -25,8 +25,8 @@
   color: #2c3e50;
 }
 body {
-  background-image: url(./views/css/picture/background.jpg);    /* 背景画像指定 */
+  background-image: url(../public/static/background.jpg);    /* 背景画像指定 */
 }
 </style>
 
-<style scoped src="./views/css/globalnavi.css"></style>
+<style scoped src="./css/globalnavi.css"></style>
