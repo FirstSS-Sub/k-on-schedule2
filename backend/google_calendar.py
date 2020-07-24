@@ -25,7 +25,7 @@ def holiday():
 
     # APIの認証を行う
     # API用の認証JSON
-    json_file = 'K-ON schedule-9e8c5eec3ea8.json'
+    json_file = 'K-ON schedule-9e8c5eec3ea8.json'  # python backend/app.py で実行する場合はbackendと同じ階層に置いておく
     # スコープ設定
     scopes = ['https://www.googleapis.com/auth/calendar.readonly']
     # 認証情報作成

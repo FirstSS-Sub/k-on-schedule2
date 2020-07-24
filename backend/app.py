@@ -406,6 +406,7 @@ def home():
 @app.route('/api/schedule', methods=['GET', 'POST'])
 @jwt_required
 def schedule():
+    app.logger.info("うひょーーーーー")
     user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user_name = user.user_name
     # user_name = request.json["user_name"]
@@ -415,6 +416,7 @@ def schedule():
     POST：日程登録処理を実施
     """
     if request.method == 'GET' and user_name is not None:
+        app.logger.info("GETで入ったよ---------------------")
         week_data = []
         # day_data = ["木", "金", "土", "日", "月", "火", "水"]
         week_holidays, week_date = holiday()
@@ -482,18 +484,17 @@ def schedule():
     # 更新フラグ（update）を1にする
     user.update = 1
 
-    db.session.add(user)
-    db.session.commit()
-
     # コメント処理
     comment = request.json['comment']
 
-    user = db.session.query(User).filter_by(id=get_jwt_identity()).first()
     user.comment = comment
     db.session.add(user)
     db.session.commit()
 
-    return redirect(url_for('login'))
+    return jsonify({
+        "week_data": week_schedule,
+        "comment": comment
+    })
 
 
 @app.route('/api/group/<int:group_name>', methods=['GET', 'POST'])
