@@ -20,6 +20,7 @@ apiclient = "*"
 gunicorn = "*"
 flask-login = "*"
 flask-jwt-extended = "*"
+google-api-python-client = "*"
 
 [requires]
 python_version = "3.7"
