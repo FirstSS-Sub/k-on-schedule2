@@ -170,6 +170,8 @@
 
 <script>
 
+import router from '../router/index.js'
+
 export default {
   name: 'Schedule',
   data () {
@@ -179,14 +181,21 @@ export default {
     }
   },
   created () {
+    const config = {
+      headers: {
+        Authorization: 'Bearer ' + this.$cookies.get('jwt_token')
+      }
+    }
     this.$axios
-      .get('/api/schedule')
+      .get('/api/schedule', config)
       .then(res => {
         this.weekData = res.data.week_data
         this.userComment = res.data.comment
       })
       .catch(error => {
         console.log(error)
+        window.alert('もう一度ログインしてから試してください')
+        router.push({ name: 'Home' }) // 強制的にルートページへ遷移
       })
   },
   methods: {
