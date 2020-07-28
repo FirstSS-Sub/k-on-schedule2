@@ -208,7 +208,7 @@ def create_user():
     if error_message is not None:
         # エラーがあれば、それを画面に表示させる
         flash(error_message, category='alert alert-danger')
-        return jsonify({"message": error_message}), 400
+        return jsonify({"msg": error_message}), 400
 
     # ハッシュ化する
     user = User()
@@ -279,7 +279,7 @@ def create_group():
     if error_message is not None:
         # エラーがあれば、それを画面に表示させる
         flash(error_message, category='alert alert-danger')
-        return redirect(url_for('create_group'))
+        return jsonify({"msg": error_message})
 
     # エラーがなければテーブルに登録する
     group = Group(group_name=group_name, member1=user_name)
@@ -344,7 +344,7 @@ def login():
     if error_message is not None:
         # エラーがあればそれを表示したうえでログイン画面に遷移
         flash(error_message, category='alert alert-danger')
-        return jsonify({"message": error_message}), 400
+        return jsonify({"msg": error_message}), 400
         # return redirect(url_for('login'))
 
     app.logger.info("aaaaaaaaaaaaaaaaaaaaaaaaaaa")
