@@ -13,7 +13,7 @@
           <span id="bulkbtn"><a @Click="bulkview();">一括で変更する ▼</a></span>
         </div>
         <div id="bulkarea">
-          <span class="btnsp btnac3" @Click="bulkclick('3');">○</span>
+          <span class="btnsp btnac3" @Click="bulkclick('3');">◯</span>
           <span class="btnsp btnac2" @Click="bulkclick('2');">△</span>
           <span class="btnsp btnac1" @Click="bulkclick('1');">×</span>
           <input type="checkbox" id="bulkflag" name="bulkflag">
@@ -24,10 +24,9 @@
           <div v-if="day.holiday == 0" v-bind:class="'regist '+day.day" id="regdiv">
             <table _fixedhead="rows:1; cols:1; div-auto-size:width; border-color:black; border-style:solid; border-width:2px;" cellspacing="0" class="listtbl" v-bind:id="'listtable'+day.num">
               <tr>
-                <td> </td>
-                <td class="rline" nowrap>
+                <th class="rline" nowrap colspan="2">
                   <div align="center">{{day.day}}<input type="hidden" name="membername" v-bind:value="day.day+'曜日'" /></div>
-                </td>
+                </th>
               </tr>
               <tr>
                 <td nowrap>9:00-10:30</td>
@@ -83,10 +82,9 @@
           <div v-else v-bind:class="'regist '+day.day"> <!-- id="regdiv"> -->
             <table _fixedhead="rows:1; cols:1; div-auto-size:width; border-color:black; border-style:solid; border-width:2px;" cellspacing="0" class="listtbl" v-bind:id="'listtable'+day.num">
               <tr>
-                <td> </td>
-                <td class="rline" nowrap>
+                <th class="rline" nowrap colspan="2">
                   <div align="center">{{day.day}}<input type="hidden" name="membername" v-bind:value="day.day+'曜日'" /></div>
-                </td>
+                </th>
               </tr>
               <tr>
                 <td nowrap>9:00-11:00</td>
@@ -215,6 +213,11 @@ export default {
 </script>
 
 <style>
+.listtbl {
+  margin-left: auto;
+  margin-right: auto;
+  border-spacing: 20px 3px;
+}
 .btnsp {
   text-decoration: none;
   font-weight: bold;
@@ -225,10 +228,10 @@ export default {
   border-radius: 8px;
   -moz-border-radius: 8px;
   -webkit-border-radius: 8px;
-  padding: 10px 6px 2px 6px;
+  padding: 2px;
   margin: 0 3px;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   vertical-align: middle;
 }
 
