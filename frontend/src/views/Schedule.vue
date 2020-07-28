@@ -212,7 +212,12 @@ export default {
       }
     },
     bulkview: function () {
-      document.getElementById('bulkarea').style.display = 'block'
+      const bulkarea = document.getElementById('bulkarea')
+      if (bulkarea.style.display === 'block') {
+        document.getElementById('bulkarea').style.display = 'none'
+      } else {
+        document.getElementById('bulkarea').style.display = 'block'
+      }
     },
     updatedata: function () {
       document.inputform.action = 'http://127.0.0.1:5000/' // 'regist?cd=qCkkDBkhvKvbVEbS'
@@ -233,16 +238,16 @@ export default {
   text-decoration: none;
   font-weight: bold;
   text-align: center;
-  font-size: 14px;
+  font-size: 30px;
   display: inline-block;
   border: 1px solid #DDD;
   border-radius: 8px;
   -moz-border-radius: 8px;
   -webkit-border-radius: 8px;
   padding: 2px;
-  margin: 0 3px;
-  width: 25px;
-  height: 25px;
+  margin: 10px;
+  width: 50px;
+  height: 50px;
   vertical-align: middle;
 }
 .btnna {
