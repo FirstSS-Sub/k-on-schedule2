@@ -33,7 +33,7 @@ export default {
         console.log(error.response.data)
         console.log(config)
         window.alert('もう一度ログインしてから試してください')
-        router.push({ name: 'Home' }) // 強制的にルートページへ遷移
+        router.push({ name: 'Login' }) // 強制的にログインページへ遷移
       })
   }
 }

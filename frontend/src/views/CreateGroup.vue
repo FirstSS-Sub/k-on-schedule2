@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import router from '../router/index.js'
 
 export default {
   name: 'create_group',
@@ -27,7 +28,30 @@ export default {
   },
   methods: {
     create_group: function () {
-      window.alert('グループ名：' + this.group_name)
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + this.$cookies.get('jwt_token')
+        }
+      }
+
+      this.$axios
+        .post('/api/create_group', {
+          group_name: this.group_name
+        }, config)
+        .then((res) => {
+          // レスポンスが200の時の処理
+          console.log('グループ名: ' + res.data.group_name + '登録しました。')
+          window.alert(
+            'グループ名: ' + res.data.group_name + '\n' +
+            '登録しました。')
+        })
+        .catch(error => {
+          console.log(error)
+          if (error.response.data.msg === 'Signature verification failed') {
+            window.alert('ログインしてください')
+            router.push({ name: 'Login' }) // 強制的にログインページへ遷移
+          }
+        })
     }
   }
 }
