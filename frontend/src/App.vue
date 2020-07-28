@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
     <div id="nav">
       <ul>
         <router-link tag="li" to="/"><a>Home</a></router-link>
@@ -15,6 +20,22 @@
     <router-view/>
   </div>
 </template>
+
+<script>
+/*
+(function () {
+  ('.hamburger').click(function () {
+    (this).toggleClass('active')
+
+    if ((this).hasClass('active')) {
+      ('.globalMenuSp').addClass('active')
+    } else {
+      ('.globalMenuSp').removeClass('active')
+    }
+  })
+})
+*/
+</script>
 
 <style>
 #app {
