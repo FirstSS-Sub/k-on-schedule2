@@ -52,7 +52,7 @@
         </tbody>
       </table>
     </div>
-    <p><button @click="login()">連携</button></p>
+    <p><button @click="link()">連携</button></p>
   </div>
 </template>
 
@@ -67,21 +67,31 @@ export default {
     }
   },
   methods: {
-    login: function () {
+    link: function () {
       const sha256 = this.$crypto.createHash('sha256')
+
+      /** 150 ～ 180までの整数乱数 */
+      const x = Math.floor(Math.random() * (180 - 150)) + 150
+      sha256.update(x)
+      /** base64でエンコードすると4/3倍の長さで4倍長の数になるので、200 〜 240までのハッシュ生成 **/
+      const nonce = sha256.digest('base64')
+
       sha256.update(this.password)
       const hashPass = sha256.digest('base64')
 
       // auth.login(this.userid,this.password)
       this.$axios
-        .post('/api/login', {
+        .post('/api/line_link', {
           user_name: this.user_name,
-          password: hashPass
+          password: hashPass,
+          nonce: nonce
         })
         .then((res) => {
-          // レスポンスが200の時の処理
-          this.$cookies.set('jwt_token', res.data.access_token, { expires: 1 }) // 1日
-          window.alert('ログインしました。')
+          // レスポンスが200番台の時の処理
+          location.href(
+            'https://access.line.me/dialog/bot/accountLink?linkToken=' +
+            this.$route.query.linkToken + '&nonce=' + nonce
+          )
         })
         .catch(error => {
           console.log(error)
