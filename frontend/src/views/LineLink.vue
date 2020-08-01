@@ -86,7 +86,7 @@ export default {
           password: hashPass,
           nonce: nonce
         })
-        .then((res) => {
+        .then(() => {
           // レスポンスが200番台の時の処理
           location.href(
             'https://access.line.me/dialog/bot/accountLink?linkToken=' +
