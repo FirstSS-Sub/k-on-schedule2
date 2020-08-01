@@ -402,17 +402,21 @@ def line_link():
     user = db.session.query(User).filter_by(user_name=user_name).first()
 
     if user is None:
-        error_message = 'ユーザー名が正しくありません'
+        error_message = 'ユーザー名またはパスワードが正しくありません'
     elif not user.password == password:
         app.logger.info(user.password)
         app.logger.info(password)
-        error_message = 'パスワードが正しくありません'
+        error_message = 'ユーザー名またはパスワードが正しくありません'
 
     if error_message is not None:
         # エラーがあればそれを表示したうえでログイン画面に遷移
         flash(error_message, category='alert alert-danger')
         return jsonify({"msg": error_message}), 400
         # return redirect(url_for('login'))
+
+    user.nonce = request.json["nonce"]
+    db.session.add(user)
+    db.session.commit()
 
     return jsonify({"msg": "Accepted"}), 202
 
