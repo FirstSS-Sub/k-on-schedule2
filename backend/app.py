@@ -75,7 +75,7 @@ class User(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     user_name = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
+    nonce = db.Column(db.String(255), default="")
     thu = db.Column(db.String(8), nullable=False, default="00000000")
     fri = db.Column(db.String(8), nullable=False, default="00000000")
     sat = db.Column(db.String(5), nullable=False, default="00000")
@@ -88,7 +88,7 @@ class User(db.Model):
 
     def __repr__(self):
         return "User<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}>".format(
-            self.id, self.user_name, self.password, self.email, self.thu, self.fri, self.sat, self.sun, self.mon,
+            self.id, self.user_name, self.password, self.nonce, self.thu, self.fri, self.sat, self.sun, self.mon,
             self.tue, self.wed, self.update, self.comment)
 
 
@@ -388,6 +388,33 @@ def login():
 
     return jsonify({"access_token": access_token}), 202
     # return response
+
+
+@app.route("/api/line_link", methods=["POST"])
+def line_link():
+    # ログインフォームから送られてきた、ユーザー名とパスワードを取得
+    user_name = request.json['user_name']
+    password = request.json['password']
+
+    # ユーザー名とパスワードのチェック
+    error_message = None
+
+    user = db.session.query(User).filter_by(user_name=user_name).first()
+
+    if user is None:
+        error_message = 'ユーザー名が正しくありません'
+    elif not user.password == password:
+        app.logger.info(user.password)
+        app.logger.info(password)
+        error_message = 'パスワードが正しくありません'
+
+    if error_message is not None:
+        # エラーがあればそれを表示したうえでログイン画面に遷移
+        flash(error_message, category='alert alert-danger')
+        return jsonify({"msg": error_message}), 400
+        # return redirect(url_for('login'))
+
+    return jsonify({"msg": "Accepted"}), 202
 
 
 @app.route('/api/home')
