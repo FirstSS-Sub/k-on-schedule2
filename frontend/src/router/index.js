@@ -52,6 +52,11 @@ const routes = [
     path: '/login_forget',
     name: 'LoginForget',
     component: () => import(/* webpackChunkName: "login_forget" */ '../views/LoginForget.vue')
+  },
+  {
+    path: '/line_link', // Lineからの呼出の時のみ表示したいので、App.vueには記載していない
+    name: 'LineLink',
+    component: () => import(/* webpackChunkName: "login_forget" */ '../views/LineLink.vue')
   }
 ]
 
