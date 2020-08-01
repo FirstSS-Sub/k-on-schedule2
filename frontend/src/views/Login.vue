@@ -54,7 +54,7 @@
     </div>
     <p><button @click="login()">ログイン</button></p>
     <div id="nav">
-      <router-link to="/Login_forget">パスワードを忘れた方はこちら</router-link>
+      <router-link to="/login_forget">パスワードを忘れた方はこちら</router-link>
     </div>
   </div>
 </template>

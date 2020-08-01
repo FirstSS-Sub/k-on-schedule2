@@ -280,11 +280,9 @@ export default {
   background: -webkit-gradient(linear, left top, left bottom, from(#5C60F3), to(#1C20BC));
   color: #eee;
 }
-
 #bulkdiv {
   margin: 14px 0 8px 0;
 }
-
 #bulkbtn {
   border: solid #d5d5d5 1px;
   padding: 1px 5px;
@@ -292,16 +290,13 @@ export default {
   background-color: #e0e0e0;
   margin: 2px 2px;
 }
-
 #bulkbtn a {
   text-decoration: none;
 }
-
 #bulkarea {
   display: none;
   margin: 3px;
 }
-
 #bulkarea span {
   padding: 6px;
 }

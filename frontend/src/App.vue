@@ -1,40 +1,39 @@
 <template>
   <div id="app">
-    <div class="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
     <div id="nav">
-      <ul>
-        <router-link tag="li" to="/"><a>Home</a></router-link>
-        <router-link tag="li" to="/about"><a>About</a></router-link>
-        <router-link tag="li" to="/user"><a>User</a></router-link>
-        <router-link tag="li" to="/login"><a>Login</a></router-link>
-        <router-link tag="li" to="/create_user"><a>CreateUser</a></router-link>
-        <router-link tag="li" to="/schedule"><a>Schedule</a></router-link>
-        <router-link tag="li" to="/test_db"><a>TestDB</a></router-link>
-        <router-link tag="li" to="/create_group"><a>CreateGroup</a></router-link>
-      </ul>
+      <div class="hamburger_btn" @click='ActiveBtn=!ActiveBtn' v-bind:class="{'hamburger_btn-active':ActiveBtn}">
+        <span class="line_01" v-bind:class="{'btn_line01':ActiveBtn}"></span>
+        <span class="line_02" v-bind:class="{'btn_line02':ActiveBtn}"></span>
+        <span class="line_03" v-bind:class="{'btn_line03':ActiveBtn}"></span>
+      </div>
+      <transition name="menu">
+        <div class="menu" v-bind:class="{'btn_menu':ActiveBtn}">
+          <ul>
+            <router-link tag="li" to="/"><a @click='ActiveBtn=!ActiveBtn'>Home</a></router-link>
+            <router-link tag="li" to="/about"><a @click='ActiveBtn=!ActiveBtn'>About</a></router-link>
+            <router-link tag="li" to="/user"><a @click='ActiveBtn=!ActiveBtn'>User</a></router-link>
+            <router-link tag="li" to="/login"><a @click='ActiveBtn=!ActiveBtn'>Login</a></router-link>
+            <router-link tag="li" to="/create_user"><a @click='ActiveBtn=!ActiveBtn'>CreateUser</a></router-link>
+            <router-link tag="li" to="/schedule"><a @click='ActiveBtn=!ActiveBtn'>Schedule</a></router-link>
+            <router-link tag="li" to="/test_db"><a @click='ActiveBtn=!ActiveBtn'>TestDB</a></router-link>
+            <router-link tag="li" to="/create_group"><a @click='ActiveBtn=!ActiveBtn'>CreateGroup</a></router-link>
+          </ul>
+        </div>
+      </transition>
     </div>
     <router-view/>
   </div>
 </template>
 
 <script>
-/*
-(function () {
-  ('.hamburger').click(function () {
-    (this).toggleClass('active')
-
-    if ((this).hasClass('active')) {
-      ('.globalMenuSp').addClass('active')
-    } else {
-      ('.globalMenuSp').removeClass('active')
+export default {
+  name: 'App',
+  data () {
+    return {
+      ActiveBtn: false
     }
-  })
-})
-*/
+  }
+}
 </script>
 
 <style>
