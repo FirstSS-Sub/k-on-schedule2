@@ -7,6 +7,7 @@ import (
 type UserRepository interface {
 	Insert(name string) error
 	FindById(id uint) (*model.User, error)
+	SearchSameName(name string) bool
 	Update(user *model.User) error
 	Delete(id uint) error
 	// GetComments(id uint) ([]*domain.Comment, error)

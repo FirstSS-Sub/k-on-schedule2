@@ -39,6 +39,14 @@ func (ur *UserRepository) FindById(id uint) (*model.User, error) {
 	return user, nil
 }
 
+func (ur *UserRepository) SearchSameName(name string) bool {
+	user := new(model.User)
+
+	// 同じ名前が既に存在する場合はtrue
+	foundSameName := !ur.DB.Where("name = ?", name).First(user).RecordNotFound()
+	return foundSameName
+}
+
 func (ur *UserRepository) Update(user *model.User) error {
 	if err := ur.DB.Save(user).Error; err != nil {
 		return err
